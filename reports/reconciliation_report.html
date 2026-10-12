@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cost Reconciliation Report</title>
+<style>
+:root { --bg:#fff; --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --head:#f6f8fa; --bad:#b42318; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --head:#151b23; --bad:#ff7b72; } }
+body { background:var(--bg); color:var(--fg); font:14px/1.5 system-ui, sans-serif; margin:0 auto;
+       max-width:1200px; padding:24px 16px; }
+h1 { font-size:24px; } h2 { font-size:18px; margin-top:32px; } p { color:var(--muted); }
+.wrap { overflow-x:auto; } table { border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums; }
+th, td { border-bottom:1px solid var(--line); padding:6px 10px; text-align:left; white-space:nowrap; }
+th { background:var(--head); font-weight:600; } td:last-child { white-space:normal; }
+code { font-size:12px; }
+</style></head><body>
+<h1>Cost Data Reconciliation Report</h1>
+
+<h2>Headline</h2>
+<p>Reporting period <strong>2025-01-01 to 2025-06-30</strong>. Source = ERP actual costs; report = <code>rpt_site_contract_summary</code>.</p>
+<div class="wrap"><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Metric</th>
+      <th>Source</th>
+      <th>Report</th>
+      <th>Difference (report - source)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Line count</td>
+      <td>17,891</td>
+      <td>17,908</td>
+      <td>+17</td>
+    </tr>
+    <tr>
+      <td>Amount</td>
+      <td>$149,972,438.40</td>
+      <td>$150,145,848.12</td>
+      <td>+$173,409.72</td>
+    </tr>
+    <tr>
+      <td>Site x contract keys</td>
+      <td>76</td>
+      <td></td>
+      <td>71 mismatched</td>
+    </tr>
+  </tbody>
+</table></div>
+<h2>Root causes</h2>
+<p>Causes explain <strong>all</strong> differences: unexplained count = 0, unexplained amount = $0.00.</p>
+<div class="wrap"><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Cause</th>
+      <th>Lines</th>
+      <th>Count effect</th>
+      <th>Net amount effect</th>
+      <th>Gross amount</th>
+      <th>Site x contracts hit</th>
+      <th>What it means</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>MISSING</td>
+      <td>40</td>
+      <td>-40</td>
+      <td>-$461,641.39</td>
+      <td>$461,641.39</td>
+      <td>29</td>
+      <td>Source line is in the period but absent from the report.</td>
+    </tr>
+    <tr>
+      <td>DUPLICATE</td>
+      <td>30</td>
+      <td>+30</td>
+      <td>+$247,184.67</td>
+      <td>$247,184.67</td>
+      <td>24</td>
+      <td>Same source line loaded into the report more than once.</td>
+    </tr>
+    <tr>
+      <td>ROUNDING</td>
+      <td>3,403</td>
+      <td>0</td>
+      <td>+$24.72</td>
+      <td>$57.96</td>
+      <td>12</td>
+      <td>Line matched, amount differs by no more than $0.50.</td>
+    </tr>
+    <tr>
+      <td>CODE_MAPPING</td>
+      <td>30</td>
+      <td>0</td>
+      <td>$0.00</td>
+      <td>$752,152.40</td>
+      <td>6</td>
+      <td>Line matched, but reported under a different site/contract.</td>
+    </tr>
+    <tr>
+      <td>PERIOD_BOUNDARY</td>
+      <td>193</td>
+      <td>+27</td>
+      <td>+$387,841.72</td>
+      <td>$1,289,788.60</td>
+      <td>66</td>
+      <td>Line on the wrong side of the period cut-off (first/last day filter bug).</td>
+    </tr>
+  </tbody>
+</table></div>
+<h2>Mismatched site x contract keys (top 15 by amount)</h2>
+<p>71 of 76 keys differ. The full list is in <code>site_contract_comparison.csv</code>.</p>
+<div class="wrap"><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Site</th>
+      <th>Contract</th>
+      <th>Src lines</th>
+      <th>Rpt lines</th>
+      <th>Src amount</th>
+      <th>Rpt amount</th>
+      <th>Diff</th>
+      <th>Causes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>S04</td>
+      <td>CT-0403</td>
+      <td>219</td>
+      <td>233</td>
+      <td>$1,542,687.50</td>
+      <td>$1,710,511.17</td>
+      <td>+$167,823.67</td>
+      <td>CODE_MAPPING, DUPLICATE, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S06</td>
+      <td>CT-0607</td>
+      <td>309</td>
+      <td>298</td>
+      <td>$2,908,019.80</td>
+      <td>$2,770,673.42</td>
+      <td>-$137,346.38</td>
+      <td>CODE_MAPPING</td>
+    </tr>
+    <tr>
+      <td>S01</td>
+      <td>CT-0104</td>
+      <td>325</td>
+      <td>333</td>
+      <td>$3,052,031.19</td>
+      <td>$3,186,867.97</td>
+      <td>+$134,836.78</td>
+      <td>CODE_MAPPING, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S03</td>
+      <td>CT-0308</td>
+      <td>211</td>
+      <td>210</td>
+      <td>$1,693,138.71</td>
+      <td>$1,567,497.00</td>
+      <td>-$125,641.71</td>
+      <td>PERIOD_BOUNDARY, ROUNDING</td>
+    </tr>
+    <tr>
+      <td>S08</td>
+      <td>CT-0803</td>
+      <td>209</td>
+      <td>202</td>
+      <td>$1,880,432.13</td>
+      <td>$1,760,976.37</td>
+      <td>-$119,455.76</td>
+      <td>CODE_MAPPING, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S10</td>
+      <td>CT-1001</td>
+      <td>315</td>
+      <td>318</td>
+      <td>$2,706,323.89</td>
+      <td>$2,803,655.84</td>
+      <td>+$97,331.95</td>
+      <td>DUPLICATE, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S11</td>
+      <td>CT-1106</td>
+      <td>199</td>
+      <td>210</td>
+      <td>$1,699,041.77</td>
+      <td>$1,785,563.18</td>
+      <td>+$86,521.41</td>
+      <td>CODE_MAPPING, MISSING, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S10</td>
+      <td>CT-1003</td>
+      <td>183</td>
+      <td>183</td>
+      <td>$1,454,032.69</td>
+      <td>$1,539,695.60</td>
+      <td>+$85,662.91</td>
+      <td>MISSING, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S05</td>
+      <td>CT-0502</td>
+      <td>278</td>
+      <td>273</td>
+      <td>$2,244,113.30</td>
+      <td>$2,175,482.42</td>
+      <td>-$68,630.88</td>
+      <td>DUPLICATE, MISSING, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S07</td>
+      <td>CT-0702</td>
+      <td>279</td>
+      <td>280</td>
+      <td>$2,133,686.46</td>
+      <td>$2,069,399.57</td>
+      <td>-$64,286.89</td>
+      <td>MISSING, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S05</td>
+      <td>CT-0503</td>
+      <td>224</td>
+      <td>214</td>
+      <td>$1,778,699.58</td>
+      <td>$1,714,996.04</td>
+      <td>-$63,703.54</td>
+      <td>CODE_MAPPING, MISSING, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S10</td>
+      <td>CT-1004</td>
+      <td>195</td>
+      <td>197</td>
+      <td>$1,436,361.61</td>
+      <td>$1,498,677.37</td>
+      <td>+$62,315.76</td>
+      <td>DUPLICATE, MISSING, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S12</td>
+      <td>CT-1207</td>
+      <td>169</td>
+      <td>168</td>
+      <td>$1,497,284.89</td>
+      <td>$1,443,877.04</td>
+      <td>-$53,407.85</td>
+      <td>MISSING, PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S11</td>
+      <td>CT-1101</td>
+      <td>166</td>
+      <td>164</td>
+      <td>$1,594,856.41</td>
+      <td>$1,544,117.81</td>
+      <td>-$50,738.60</td>
+      <td>PERIOD_BOUNDARY</td>
+    </tr>
+    <tr>
+      <td>S03</td>
+      <td>CT-0307</td>
+      <td>279</td>
+      <td>274</td>
+      <td>$2,063,215.61</td>
+      <td>$2,017,845.77</td>
+      <td>-$45,369.84</td>
+      <td>MISSING, PERIOD_BOUNDARY</td>
+    </tr>
+  </tbody>
+</table></div>
+<h2>Exception samples (up to 5 per cause)</h2>
+<p>3,696 line-level exceptions in total. The full list is in <code>exceptions.csv</code>.</p>
+<div class="wrap"><table class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>Cause</th>
+      <th>actual_id</th>
+      <th>Posted</th>
+      <th>Source key</th>
+      <th>Report key</th>
+      <th>Src amount</th>
+      <th>Rpt amount</th>
+      <th>Detail</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>CODE_MAPPING</td>
+      <td>11197</td>
+      <td>2025-06-30</td>
+      <td>S05/CT-0503</td>
+      <td>S11/CT-1106</td>
+      <td>$41,554.39</td>
+      <td>$41,554.39</td>
+      <td>S05/CT-0503 reported as S11/CT-1106</td>
+    </tr>
+    <tr>
+      <td>CODE_MAPPING</td>
+      <td>11198</td>
+      <td>2025-04-23</td>
+      <td>S05/CT-0503</td>
+      <td>S11/CT-1106</td>
+      <td>$3,312.05</td>
+      <td>$3,312.05</td>
+      <td>S05/CT-0503 reported as S11/CT-1106</td>
+    </tr>
+    <tr>
+      <td>CODE_MAPPING</td>
+      <td>11200</td>
+      <td>2025-02-22</td>
+      <td>S05/CT-0503</td>
+      <td>S11/CT-1106</td>
+      <td>$1,666.19</td>
+      <td>$1,666.19</td>
+      <td>S05/CT-0503 reported as S11/CT-1106</td>
+    </tr>
+    <tr>
+      <td>CODE_MAPPING</td>
+      <td>11202</td>
+      <td>2025-01-19</td>
+      <td>S05/CT-0503</td>
+      <td>S11/CT-1106</td>
+      <td>$2,428.78</td>
+      <td>$2,428.78</td>
+      <td>S05/CT-0503 reported as S11/CT-1106</td>
+    </tr>
+    <tr>
+      <td>CODE_MAPPING</td>
+      <td>11207</td>
+      <td>2025-01-24</td>
+      <td>S05/CT-0503</td>
+      <td>S11/CT-1106</td>
+      <td>$10,050.75</td>
+      <td>$10,050.75</td>
+      <td>S05/CT-0503 reported as S11/CT-1106</td>
+    </tr>
+    <tr>
+      <td>DUPLICATE</td>
+      <td>101</td>
+      <td>2025-03-01</td>
+      <td>S01/CT-0101</td>
+      <td>S01/CT-0101</td>
+      <td>$715.99</td>
+      <td>$715.99</td>
+      <td>copy #2 of actual_id 101</td>
+    </tr>
+    <tr>
+      <td>DUPLICATE</td>
+      <td>107</td>
+      <td>2025-04-12</td>
+      <td>S01/CT-0101</td>
+      <td>S01/CT-0101</td>
+      <td>$1,957.12</td>
+      <td>$1,957.12</td>
+      <td>copy #2 of actual_id 107</td>
+    </tr>
+    <tr>
+      <td>DUPLICATE</td>
+      <td>2310</td>
+      <td>2025-05-12</td>
+      <td>S02/CT-0201</td>
+      <td>S02/CT-0201</td>
+      <td>$26,420.99</td>
+      <td>$26,420.99</td>
+      <td>copy #2 of actual_id 2310</td>
+    </tr>
+    <tr>
+      <td>DUPLICATE</td>
+      <td>2535</td>
+      <td>2025-03-30</td>
+      <td>S02/CT-0202</td>
+      <td>S02/CT-0202</td>
+      <td>$8,766.44</td>
+      <td>$8,766.44</td>
+      <td>copy #2 of actual_id 2535</td>
+    </tr>
+    <tr>
+      <td>DUPLICATE</td>
+      <td>2538</td>
+      <td>2025-06-29</td>
+      <td>S02/CT-0202</td>
+      <td>S02/CT-0202</td>
+      <td>$3,591.58</td>
+      <td>$3,591.58</td>
+      <td>copy #2 of actual_id 2538</td>
+    </tr>
+    <tr>
+      <td>MISSING</td>
+      <td>104</td>
+      <td>2025-05-19</td>
+      <td>S01/CT-0101</td>
+      <td></td>
+      <td>$6,764.89</td>
+      <td></td>
+      <td>not found in report ledger</td>
+    </tr>
+    <tr>
+      <td>MISSING</td>
+      <td>336</td>
+      <td>2025-05-25</td>
+      <td>S01/CT-0102</td>
+      <td></td>
+      <td>$2,798.05</td>
+      <td></td>
+      <td>not found in report ledger</td>
+    </tr>
+    <tr>
+      <td>MISSING</td>
+      <td>4585</td>
+      <td>2025-02-04</td>
+      <td>S02/CT-0206</td>
+      <td></td>
+      <td>$3,144.54</td>
+      <td></td>
+      <td>not found in report ledger</td>
+    </tr>
+    <tr>
+      <td>MISSING</td>
+      <td>5611</td>
+      <td>2025-03-03</td>
+      <td>S03/CT-0301</td>
+      <td></td>
+      <td>$2,029.03</td>
+      <td></td>
+      <td>not found in report ledger</td>
+    </tr>
+    <tr>
+      <td>MISSING</td>
+      <td>6425</td>
+      <td>2025-04-05</td>
+      <td>S03/CT-0304</td>
+      <td></td>
+      <td>$6,022.02</td>
+      <td></td>
+      <td>not found in report ledger</td>
+    </tr>
+    <tr>
+      <td>PERIOD_BOUNDARY</td>
+      <td>25</td>
+      <td>2025-07-01</td>
+      <td>S01/CT-0101</td>
+      <td>S01/CT-0101</td>
+      <td>$8,661.54</td>
+      <td>$8,661.54</td>
+      <td>posted 2025-07-01, outside 2025-01-01..2025-06-30, but reported</td>
+    </tr>
+    <tr>
+      <td>PERIOD_BOUNDARY</td>
+      <td>111</td>
+      <td>2025-07-01</td>
+      <td>S01/CT-0101</td>
+      <td>S01/CT-0101</td>
+      <td>$6,645.93</td>
+      <td>$6,645.93</td>
+      <td>posted 2025-07-01, outside 2025-01-01..2025-06-30, but reported</td>
+    </tr>
+    <tr>
+      <td>PERIOD_BOUNDARY</td>
+      <td>262</td>
+      <td>2025-01-01</td>
+      <td>S01/CT-0101</td>
+      <td></td>
+      <td>$1,587.73</td>
+      <td></td>
+      <td>posted 2025-01-01 (period edge); no report lines on that date</td>
+    </tr>
+    <tr>
+      <td>PERIOD_BOUNDARY</td>
+      <td>294</td>
+      <td>2025-01-01</td>
+      <td>S01/CT-0101</td>
+      <td></td>
+      <td>$1,606.12</td>
+      <td></td>
+      <td>posted 2025-01-01 (period edge); no report lines on that date</td>
+    </tr>
+    <tr>
+      <td>PERIOD_BOUNDARY</td>
+      <td>447</td>
+      <td>2025-01-01</td>
+      <td>S01/CT-0102</td>
+      <td></td>
+      <td>$12,221.11</td>
+      <td></td>
+      <td>posted 2025-01-01 (period edge); no report lines on that date</td>
+    </tr>
+    <tr>
+      <td>ROUNDING</td>
+      <td>1539</td>
+      <td>2025-04-28</td>
+      <td>S01/CT-0105</td>
+      <td>S01/CT-0105</td>
+      <td>$5,268.31</td>
+      <td>$5,268.00</td>
+      <td>diff -31 cents</td>
+    </tr>
+    <tr>
+      <td>ROUNDING</td>
+      <td>1541</td>
+      <td>2025-04-14</td>
+      <td>S01/CT-0105</td>
+      <td>S01/CT-0105</td>
+      <td>$9,559.42</td>
+      <td>$9,559.00</td>
+      <td>diff -42 cents</td>
+    </tr>
+    <tr>
+      <td>ROUNDING</td>
+      <td>1542</td>
+      <td>2025-03-15</td>
+      <td>S01/CT-0105</td>
+      <td>S01/CT-0105</td>
+      <td>$6,423.09</td>
+      <td>$6,423.00</td>
+      <td>diff -9 cents</td>
+    </tr>
+    <tr>
+      <td>ROUNDING</td>
+      <td>1543</td>
+      <td>2025-03-27</td>
+      <td>S01/CT-0105</td>
+      <td>S01/CT-0105</td>
+      <td>$4,223.94</td>
+      <td>$4,224.00</td>
+      <td>diff 6 cents</td>
+    </tr>
+    <tr>
+      <td>ROUNDING</td>
+      <td>1546</td>
+      <td>2025-02-17</td>
+      <td>S01/CT-0105</td>
+      <td>S01/CT-0105</td>
+      <td>$10,019.78</td>
+      <td>$10,020.00</td>
+      <td>diff 22 cents</td>
+    </tr>
+  </tbody>
+</table></div>
+</body></html>
